@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YamlDotNet.Locations", "src\YamlDotNet.Locations\YamlDotNet.Locations.csproj", "{71322515-490F-4642-B282-4282FD2D7E2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YamlDotNet.Locations.Tests", "tests\YamlDotNet.Locations.Tests\YamlDotNet.Locations.Tests.csproj", "{49B6B5E3-85AC-4B81-A349-40C56DE68213}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{71322515-490F-4642-B282-4282FD2D7E2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71322515-490F-4642-B282-4282FD2D7E2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71322515-490F-4642-B282-4282FD2D7E2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71322515-490F-4642-B282-4282FD2D7E2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49B6B5E3-85AC-4B81-A349-40C56DE68213}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49B6B5E3-85AC-4B81-A349-40C56DE68213}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49B6B5E3-85AC-4B81-A349-40C56DE68213}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49B6B5E3-85AC-4B81-A349-40C56DE68213}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
