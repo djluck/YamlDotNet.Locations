@@ -44,13 +44,15 @@ public class PerfTests
         {
             using var reader = File.OpenText(path);
             var parser = new Parser(reader);
-            var builder = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .WithTypeConverter(new StrictEnumConverter());
 
-            var alertRuleFile = builder.Deserialize<AlertRule>(parser);
-            //Console.WriteLine(alertRuleFile.locator.GetLocation(x => x.Labels["ops_genie_team_id"]));
-            
+            var alertRuleFile = LocatingDeserializer.Deserialize<AlertRule>(
+                parser, 
+                (builder, ctx) =>
+                    builder
+                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                        .WithTypeConverter(new StrictEnumConverter())
+            );
+
         }
         sp.Stop();
         Console.Write(sp.Elapsed);

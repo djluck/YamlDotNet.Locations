@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using YamlDotNet.Core;
 using YamlDotNet.Locations.NodeDeserializers;
 using YamlDotNet.Locations.TypeInspectors;
@@ -9,11 +10,15 @@ namespace YamlDotNet.Locations;
 
 public static class LocatingDeserializer
 {
-    public static (T deserialized , ILocator<T> locator) Deserialize<T>(this DeserializerBuilder builder, IParser parser)
+    public static (T deserialized , ILocator<T> locator) Deserialize<T>(IParser parser, Func<DeserializerBuilder, ParsingContext, DeserializerBuilder>? configureBuilder = null)
     {
+        configureBuilder ??= (builder, ctx) => builder;
         var context = new ParsingContext();
         parser = new LocatorParser(parser);
 
+        var builder = new DeserializerBuilder();
+        configureBuilder(builder, context);
+        
         var yamlDeserializer = builder
             .WithNodeDeserializer(
                 nd => new LocatingObjectNodeDeserializer(nd, context),
@@ -36,9 +41,9 @@ public static class LocatingDeserializer
         return (result, new Locator<T>(context.CompleteParsing()));
     }
     
-    public static (T deserialized , ILocator<T> locator) Deserialize<T>(this DeserializerBuilder builder, TextReader reader) =>
-        Deserialize<T>(builder, new Parser(reader));
+    public static (T deserialized , ILocator<T> locator) Deserialize<T>(TextReader reader, Func<DeserializerBuilder, ParsingContext, DeserializerBuilder>? configureBuilder = null) =>
+        Deserialize<T>(new Parser(reader), configureBuilder);
     
-    public static (T deserialized , ILocator<T> locator) Deserialize<T>(this DeserializerBuilder builder, string s) =>
-        Deserialize<T>(builder, new StringReader(s));
+    public static (T deserialized , ILocator<T> locator) Deserialize<T>(string s, Func<DeserializerBuilder, ParsingContext, DeserializerBuilder>? configureBuilder = null) =>
+        Deserialize<T>(new StringReader(s), configureBuilder);
 }

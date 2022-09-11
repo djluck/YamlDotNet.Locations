@@ -205,9 +205,8 @@ outer:
 
     public ILocator<T> Deserialize<T>(string yaml)
     {
-        var builder = new DeserializerBuilder()
-            .WithNamingConvention(UnderscoredNamingConvention.Instance);
-        return builder.Deserialize<T>(yaml).locator;
+        return LocatingDeserializer.Deserialize<T>(yaml, (builder, ctx) => builder.WithNamingConvention(UnderscoredNamingConvention.Instance))
+            .locator;
     }
 
     public class SampleClass
@@ -316,9 +315,8 @@ property: hello!
     
     private ILocator<T> Deserialize<T>(string yaml)
     {
-        var builder = new DeserializerBuilder()
-            .WithNamingConvention(UnderscoredNamingConvention.Instance);
-        return builder.Deserialize<T>(yaml).locator;
+        return LocatingDeserializer.Deserialize<T>(yaml, (builder, ctx) => builder.WithNamingConvention(UnderscoredNamingConvention.Instance))
+            .locator;
     }
 
     public class SampleClass

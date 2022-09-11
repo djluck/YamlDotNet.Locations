@@ -5,7 +5,7 @@ using YamlDotNet.Core;
 
 namespace YamlDotNet.Locations;
 
-internal interface IYamlNode
+public interface IYamlNode
 {
     public Mark Start { get; }
     public Mark? End { get; set; }
@@ -91,7 +91,7 @@ internal record Scalar(Mark Start, object? Value) : IYamlNode
     void IYamlNode.AddChild(IYamlNode child) => throw new NotImplementedException("Scalars cannot have children");
 }
 
-internal class ParsingContext
+public class ParsingContext
 {
     private IYamlNode? _root;
     

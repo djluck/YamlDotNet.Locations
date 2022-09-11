@@ -4,9 +4,23 @@
         <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <PackageId>YamlDotNet.Locations</PackageId>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Authors>James Luck</Authors>
+        <PackageTags>YamlDotNet Yaml</PackageTags>
+        <PackageProjectUrl>https://github.com/djluck/YamlDotNet.Locations</PackageProjectUrl>
+        <Description>
+            An extension to the YamlDotNet library that allows the user to resolve deserialized objects to their position within the source YAML.
+        </Description>
+        <PackageLicense>https://github.com/djluck/YamlDotNet.Locations/blob/main/LICENSE</PackageLicense>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Sprache" Version="2.3.1" />
       <PackageReference Include="YamlDotNet" Version="12.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
 </Project>
