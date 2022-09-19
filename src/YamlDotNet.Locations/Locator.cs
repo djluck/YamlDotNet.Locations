@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using YamlDotNet.Core;
@@ -19,10 +20,12 @@ public interface ILocator<TDeserialized>
 /// </summary>
 /// <param name="Location">If <see cref="IsSuccess"/> is true, contains the location of the requested object.</param>
 /// <param name="ErrorMessage">If <see cref="IsSuccess"/> is false, contains an error message describing why the query failed.</param>
-public record struct LocationResult(Location? Location, string? ErrorMessage)
+/// <param name="ExecutedOperations">Contains the query operations that we successfully executed. When <see cref="IsSuccess"/> is true, this is equal to all of the query operations specified.</param>
+/// <param name="LastLocation">If <see cref="IsSuccess"/> is false, contains the last successfully resolved location. Can be null when <see cref="ExecutedOperations"/> is empty.</param>
+public record struct LocationResult(Location? Location, ImmutableArray<IQueryOp> ExecutedOperations, string? ErrorMessage, Location? LastLocation = null)
 {
-    public LocationResult(Location location) : this(location, null) {}
-    public LocationResult(string errorMessage) : this(null, errorMessage) {}
+    public LocationResult(Location location, ImmutableArray<IQueryOp> executedOperations) : this(location, executedOperations, null) {}
+    public LocationResult(string errorMessage, ImmutableArray<IQueryOp> executedOperations, Location? lastLocation) : this(null, executedOperations, errorMessage, lastLocation) {}
 
     /// <summary>
     /// Returns true if a location was successfully found.
@@ -36,8 +39,11 @@ public record struct LocationResult(Location? Location, string? ErrorMessage)
         if (IsSuccess)
             return Location.ToString();
         
-        return $"Location query failed: {ErrorMessage}";
+        return $"Location query failed: {ErrorMessage}. {GetAttemptedOps()}";
     }
+    
+    private string GetAttemptedOps() =>
+        $"Executed query operations: {(ExecutedOperations.Length == 0 ? "<none>" : string.Join(" -> ", ExecutedOperations))}";
 }
 
 public record Location(Mark Start, Mark End)
@@ -57,23 +63,18 @@ internal class Locator<TDeserialized> : ILocator<TDeserialized>
     LocationResult ILocator<TDeserialized>.GetLocation(ICollection<IQueryOp> query)
     {
         OpResult GetMismatchedStructureResult(IQueryOp failedOp, IYamlNode node) => new OpResult(
-            $"Query did not match deserialized structure, expected {failedOp.GetType().Name.Replace("Query", "")} but found {node.GetType().Name}. "
-            + GetExecutedOps(failedOp)
+            $"Query did not match deserialized structure, expected {failedOp.GetType().Name.Replace("Query", "")} but found {node.GetType().Name}"
         );
-
-        string GetExecutedOps(IQueryOp failedOp)
-        {
-            var successfulOps = query.TakeWhile(x => x != failedOp).Select(x => x.ToString()).ToArray();
-            return $"Executed query operations: {(successfulOps.Length == 0 ? "<none>" : string.Join(" -> ", successfulOps))}";
-        }
 
         if (query.Count < 1)
             throw new ArgumentException("Must provide at least one query operation", nameof(query));
         
         IYamlNode? current = _root;
+        IYamlNode? last = null;
         if (current == null)
-            return new LocationResult("Deserialized object was null");
-        
+            return new LocationResult("Deserialized object was null", ImmutableArray<IQueryOp>.Empty, null);
+
+        var executed = new List<IQueryOp>();
         foreach (var op in query)
         {
             var next = op switch
@@ -82,30 +83,38 @@ internal class Locator<TDeserialized> : ILocator<TDeserialized>
                     current is Sequence s ? 
                         s.TryGet(index, out var node) ? 
                             new OpResult(node) : 
-                            new OpResult($"The requested sequence index '{index}' did not exist! " + GetExecutedOps(op)) 
+                            new OpResult($"The requested sequence index '{index}' did not exist") 
                         : GetMismatchedStructureResult(op, current),
                 
                 QueryMap(object key) => 
                     current is Map m ?
                         m.TryGet(key, out var node) ?
                             new OpResult(node) :
-                            new OpResult($"The requested map key '{key}' did not exist! " + GetExecutedOps(op))
+                            new OpResult($"The requested map key '{key}' did not exist")
                         : GetMismatchedStructureResult(op, current),
                 
                 QueryValue => new OpResult(current),
                 _ => throw new InvalidOperationException($"Unsupported query op '{op}'")
             };
 
-            if (!next.IsSuccess)
-                return new LocationResult(next.ErrorMessage);
+            last = current;
             
+            if (!next.IsSuccess)
+                return new LocationResult(next.ErrorMessage, executed.ToImmutableArray(), last == null ? null : ToLocation(last));
+            
+            executed.Add(op);
             current = next.Node;
         }
 
-        if (!current.End.HasValue)
-            throw new InvalidOperationException("Node was partially located!");
+        return new LocationResult(ToLocation(current), executed.ToImmutableArray());
+    }
 
-        return new LocationResult(new Location(current.Start, current.End.Value));
+    private static Location ToLocation(IYamlNode n)
+    {
+        if (!n.End.HasValue)
+            throw new InvalidOperationException("Node was partially located!");
+        
+        return new Location(n.Start, n.End.Value);
     }
 
     private record struct OpResult(IYamlNode? Node, string? ErrorMessage)

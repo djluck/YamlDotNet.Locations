@@ -257,6 +257,8 @@ property: hello!
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorMessage.Should().Contain("expected Sequence but found Map");
+        result.ExecutedOperations.Should().BeEmpty();
+        result.LastLocation.ToString().Should().Be("(2:1)-(6:1)");
     }
     
     [Test]
@@ -271,7 +273,9 @@ property: hello!
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorMessage.Should().Contain("expected Map but found Scalar");
-        result.ErrorMessage.Should().Contain("Executed query operations: Map[Collection] -> Sequence[0]");
+        result.ToString().Should().Contain("Executed query operations: Map[Collection] -> Sequence[0]");
+        result.ExecutedOperations.Should().Equal(new QueryMap("Collection"), new QuerySequence(0));
+        result.LastLocation.ToString().Should().Be("(3:5)-(3:8)");
     }
     
     [Test]
@@ -284,7 +288,9 @@ property: hello!
         });
 
         result.IsSuccess.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("The requested sequence index '3' did not exist!");
+        result.ErrorMessage.Should().Contain("The requested sequence index '3' did not exist");
+        result.ExecutedOperations.Should().Equal(new QueryMap("Collection"));
+        result.LastLocation.ToString().Should().Be("(3:3)-(5:1)");
     }
     
     [Test]
@@ -296,7 +302,9 @@ property: hello!
         });
 
         result.IsSuccess.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("The requested map key 'IDontExist' did not exist!");
+        result.ErrorMessage.Should().Contain("The requested map key 'IDontExist' did not exist");
+        result.ExecutedOperations.Should().BeEmpty();
+        result.LastLocation.ToString().Should().Be("(2:1)-(6:1)");
     }
     
     [Test]
@@ -310,7 +318,9 @@ property: hello!
 
         result.IsSuccess.Should().BeFalse();
         result.ErrorMessage.Should().Contain("expected Map but found Sequence");
-        result.ErrorMessage.Should().Contain("Executed query operations: Map[Collection]");
+        result.ToString().Should().Contain("Executed query operations: Map[Collection]");
+        result.ExecutedOperations.Should().Equal(new QueryMap("Collection"));
+        result.LastLocation.ToString().Should().Be("(3:3)-(5:1)");
     }
     
     private ILocator<T> Deserialize<T>(string yaml)
