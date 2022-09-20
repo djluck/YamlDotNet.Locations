@@ -202,10 +202,22 @@ outer:
         locator.GetLocation(x => x[1].PropTwooo).ToString()
             .Should().Be("(5:15)-(5:16)");
     }
-
-    public ILocator<T> Deserialize<T>(string yaml)
+    
+    [TestCase()]
+    public void Can_Maintain_Naming_Conventions()
     {
-        return LocatingDeserializer.Deserialize<T>(yaml, (builder, ctx) => builder.WithNamingConvention(UnderscoredNamingConvention.Instance))
+        var toParse = @"
+- prop_one: 1
+";
+
+        var locator = Deserialize<SampleClass[]>(toParse, maintainNamingConvention: true);
+        locator.GetLocation(".[0].prop_one").ToString()
+            .Should().Be("(2:13)-(2:14)");
+    }
+
+    public ILocator<T> Deserialize<T>(string yaml, bool maintainNamingConvention = false)
+    {
+        return LocatingDeserializer.Deserialize<T>(yaml, (builder, ctx) => builder.WithNamingConvention(UnderscoredNamingConvention.Instance), maintainNamingConvention)
             .locator;
     }
 
