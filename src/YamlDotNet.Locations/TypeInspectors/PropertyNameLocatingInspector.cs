@@ -12,12 +12,15 @@ internal class PropertyNameLocatingInspector : ITypeInspector
 	private ITypeInspector _inner;
 	private LocatorParser _parser;
 	private ParsingContext _context;
+	private readonly bool _maintainNamingConvention;
 
-	public PropertyNameLocatingInspector(ITypeInspector inner, LocatorParser parser, ParsingContext context)
+	public PropertyNameLocatingInspector(ITypeInspector inner, LocatorParser parser, ParsingContext context,
+		bool maintainNamingConvention)
 	{
 		_inner = inner;
 		_parser = parser;
 		_context = context;
+		_maintainNamingConvention = maintainNamingConvention;
 	}
 	
 	public IEnumerable<IPropertyDescriptor> GetProperties(Type type, object? container)
@@ -31,8 +34,7 @@ internal class PropertyNameLocatingInspector : ITypeInspector
 
 		// Certain parts of the YamlDotNet type inspector pipelines will transform property names, e.g. to match a naming convention
 		// We need to access the underlying untransformed member name to be able to map member positions.
-		var baseDescriptor = GetBaseDescriptor(p);
-		var propertyName = baseDescriptor.Name;
+		var propertyName = _maintainNamingConvention ? p.Name : GetBaseDescriptor(p).Name;
 
 		_context.AtPropertyStart(_parser.Current.Start, propertyName);
 
