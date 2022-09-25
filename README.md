@@ -48,15 +48,15 @@ Object:
 var (deserialiedValue, locator) = LocatingDeserializer.Deserialize<MyClass>(yaml);
 
 // Output: (2:1)-(7:1)
-Console.WriteLine(locator.GetLocation(x => "."));
+Console.WriteLine(locator.GetLocation( "."));
 // Output: (3:3)-(7:1)
-Console.WriteLine(locator.GetLocation(x => ".Object"));
+Console.WriteLine(locator.GetLocation( ".Object"));
 // Output: (3:10)-(3:19)
-Console.WriteLine(locator.GetLocation(x => ".Object.Prop1"));
+Console.WriteLine(locator.GetLocation(".Object.Prop1"));
 // Output: (5:5)-(7:1)
-Console.WriteLine(locator.GetLocation(x => ".Object.Collection"));
+Console.WriteLine(locator.GetLocation(".Object.Collection"));
 // Output: (6:7)-(6:10)
-Console.WriteLine(locator.GetLocation(x => ".Object.Collection[1]"));
+Console.WriteLine(locator.GetLocation(".Object.Collection[1]"));
 ```
 
 ## A Dire Warning
