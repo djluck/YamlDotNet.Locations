@@ -214,6 +214,23 @@ outer:
         locator.GetLocation(".[0].prop_one").ToString()
             .Should().Be("(2:13)-(2:14)");
     }
+    
+    [TestCase()]
+    public void Can_Locate_On_Unary_Expression()
+    {
+        var toParse = @"
+prop_twooo: 1
+prop_three: zero
+";
+
+        var locator = Deserialize<SampleClass>(toParse);
+        locator.GetLocation<SampleClass, object>(x => x.PropThree).ToString()
+            .Should().Be("(3:13)-(3:17)");
+        locator.GetLocation<SampleClass, object>(x => x.PropTwooo).ToString()
+            .Should().Be("(2:13)-(2:14)");
+        locator.GetLocation<SampleClass, object>(x => (object)x.PropTwooo).ToString()
+            .Should().Be("(2:13)-(2:14)");
+    }
 
     public ILocator<T> Deserialize<T>(string yaml, bool maintainNamingConvention = false)
     {
@@ -221,7 +238,18 @@ outer:
             .locator;
     }
 
-    public class SampleClass
+    public enum SampleEnum
+    {
+        Zero,
+        One,
+        Two
+    }
+
+    public class Base
+    {
+        public SampleEnum PropThree { get; set; }
+    }
+    public class SampleClass: Base
     {
         public string PropOne { get; set; }
         public int PropTwooo { get; set; }
@@ -334,7 +362,7 @@ property: hello!
         result.ExecutedOperations.Should().Equal(new QueryMap("Collection"));
         result.LastLocation.ToString().Should().Be("(3:3)-(5:1)");
     }
-    
+
     private ILocator<T> Deserialize<T>(string yaml)
     {
         return LocatingDeserializer.Deserialize<T>(yaml, (builder, ctx) => builder.WithNamingConvention(UnderscoredNamingConvention.Instance))
