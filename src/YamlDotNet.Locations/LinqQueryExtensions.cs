@@ -57,6 +57,10 @@ public static class LinqQueryExtensions
                     expr = b.Left;
                     yield return new QuerySequence(index);
                 }
+                else if ( expr is UnaryExpression u )
+                {
+                    expr = u.Operand as MemberExpression;
+                }
                 else if (expr is MethodCallExpression method)
                 {
                     expr = method.Object;
