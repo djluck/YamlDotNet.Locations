@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using FluentAssertions;
 using NUnit.Framework;
 using YamlDotNet.Serialization;
@@ -231,7 +232,39 @@ prop_three: zero
         locator.GetLocation<SampleClass, object>(x => (object)x.PropTwooo).ToString()
             .Should().Be("(2:13)-(2:14)");
     }
+    
+    
+    [TestCase()]
+    public void Can_handle_index_closures()
+    {
+        var toParse = @"
+prop_list:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+";
+        int idx = 2;
+        Func<int, int> indexGen = (index) => index;
+        var locator = Deserialize<SampleClass>(toParse);
+        locator.GetLocation<SampleClass, object>(x => x.PropList[2]).ToString()
+            .Should().Be("(5:5)-(5:6)");
+        locator.GetLocation(x => x.PropList[idx]).ToString()
+            .Should().Be("(5:5)-(5:6)");
+        locator.GetLocation<SampleClass, object>(ScopedIndex()).ToString()
+            .Should().Be("(5:5)-(5:6)");
+        locator.GetLocation(x => x.PropList[indexGen(2)]).ToString()
+            .Should().Be("(5:5)-(5:6)");
+        
+    }
 
+    private Expression<Func<SampleClass, object>> ScopedIndex()
+    {
+        int idx = 2;
+        return s => s.PropList[idx];
+    }
+    
     public ILocator<T> Deserialize<T>(string yaml, bool maintainNamingConvention = false)
     {
         return LocatingDeserializer.Deserialize<T>(yaml, (builder, ctx) => builder.WithNamingConvention(UnderscoredNamingConvention.Instance), maintainNamingConvention)
@@ -260,6 +293,7 @@ prop_three: zero
         public Guid AGuid { get; set; }
         public TimeSpan ATimeSpan { get; set; }
         public DateTime ADateTime { get; set; }
+        public List<int> PropList { get; set; }
     }
 }
 
