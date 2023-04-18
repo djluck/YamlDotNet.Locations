@@ -59,7 +59,7 @@ public static class LinqQueryExtensions
                 }
                 else if ( expr is UnaryExpression u )
                 {
-                    expr = u.Operand as MemberExpression;
+                    expr = u.Operand;
                 }
                 else if (expr is MethodCallExpression method)
                 {
@@ -70,8 +70,12 @@ public static class LinqQueryExtensions
                         var parameters = method.Method.GetParameters();
                         if (parameters[0].ParameterType == typeof(int))
                         {
-                            var index = (int) (method.Arguments[0] as ConstantExpression)!.Value!;
+
+                            int index = method.Arguments[0] is ConstantExpression
+                                ? (int)(method.Arguments[0] as ConstantExpression)!.Value!
+                                : Convert.ToInt32(Expression.Lambda(method.Arguments[0]).Compile().DynamicInvoke(null));
                             yield return new QuerySequence(index);
+                            
                         }
                         else
                         {
