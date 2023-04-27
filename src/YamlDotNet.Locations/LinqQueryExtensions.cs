@@ -79,7 +79,9 @@ public static class LinqQueryExtensions
                         }
                         else
                         {
-                            var key = method.Arguments[0] is ConstantExpression ? (method.Arguments[0] as ConstantExpression)!.Value! : Expression.Lambda(method.Arguments[0]).Compile().DynamicInvoke(null)!;
+                            var key = method.Arguments[0] is ConstantExpression 
+                                ? (method.Arguments[0] as ConstantExpression)!.Value! 
+                                : Expression.Lambda(method.Arguments[0]).Compile().DynamicInvoke(null)!;
                             yield return new QueryMap(key);
                         }
                     }
