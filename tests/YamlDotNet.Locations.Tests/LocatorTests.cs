@@ -259,10 +259,35 @@ prop_list:
         
     }
 
+    [TestCase()]
+    public void Can_handle_key_closures()
+    {
+        var toParse = @"
+collection:
+  key1 : value1
+  key2 : value2
+";
+        var locator = Deserialize<SampleClass>(toParse);
+        var key = "key2";
+
+        locator.GetLocation<SampleClass, object>(x => x.Collection["key1"]).ToString()
+            .Should().Be("(3:10)-(3:16)");
+        locator.GetLocation<SampleClass, object>(x => x.Collection[key]).ToString()
+            .Should().Be("(4:10)-(4:16)");
+        locator.GetLocation<SampleClass, object>(ScopedKey()).ToString()
+            .Should().Be("(4:10)-(4:16)");
+    }
+
     private Expression<Func<SampleClass, object>> ScopedIndex()
     {
         int idx = 2;
         return s => s.PropList[idx];
+    }
+
+    private Expression<Func<SampleClass, object>> ScopedKey()
+    {
+        string key = "key2";
+        return s => s.Collection[key];
     }
     
     public ILocator<T> Deserialize<T>(string yaml, bool maintainNamingConvention = false)
@@ -294,6 +319,8 @@ prop_list:
         public TimeSpan ATimeSpan { get; set; }
         public DateTime ADateTime { get; set; }
         public List<int> PropList { get; set; }
+        
+        public Dictionary<string, string> Collection { get; set; }
     }
 }
 
